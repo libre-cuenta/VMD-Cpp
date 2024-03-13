@@ -223,7 +223,6 @@ std::vector<std::vector<std::vector<complex<double>>>> VMD(std::vector<double> f
 
         n = n + 1;
 
-        uDiff = std::numeric_limits<double>::epsilon();
         for (int i = 0; i < K; i++) {
             uDiff = uDiff + (1.0 / T) * std::inner_product(u_hat_plus[n][i].begin(), u_hat_plus[n][i].end(), u_hat_plus[n - 1][i].begin(), std::complex<double>(0.0, 0.0), std::plus<std::complex<double>>(), [](const std::complex<double>& a, const std::complex<double>& b) { return std::conj(a - b) * (a - b); }).real();
         }
