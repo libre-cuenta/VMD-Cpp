@@ -1,2 +1,2 @@
 # VMD-Cpp
-Variational mode decomposition (VMD)
+Variational mode decomposition (VMD) on C++
