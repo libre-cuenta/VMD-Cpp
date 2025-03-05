@@ -10,6 +10,8 @@
 #include <string_view>
 #include <random>
 #include <numeric>
+#include <concepts>
+#include <algorithm>
 
 using namespace std;
 
@@ -30,41 +32,48 @@ using namespace std;
 //Vardan Grigoryan
 //Shunguang Wu
 
+template <typename SignalDT>
+concept d_types = requires(SignalDT a, SignalDT b) {
+	{ a == b } -> std::convertible_to<double>;
+	{ a != b } -> std::convertible_to<double>;
+};
 
 //сдвиг элементов на половину длины массива
 //SignalDT (тип исходного сигнала) - int, unsigned, double, complex
-template<typename SignalDT>
+template <d_types SignalDT>
 vector<SignalDT> fftshift(vector<SignalDT> f_hat);
 
 //быстрое преобразование фурье
-template<typename SignalDT> 
-std::vector<std::complex<double>> fft(vector<SignalDT> f);
+template <d_types SignalDT>
+std::vector<std::complex<SignalDT>> fft(vector<SignalDT> f);
 
 //обратное преобразование фурье
-template<typename SignalDT> 
-std::vector<std::complex<double>> ifft(vector<SignalDT> f);
+template <d_types SignalDT> 
+std::vector<std::complex<SignalDT>> ifft(vector<SignalDT> f);
 
 //генерация временных интервалов (от start до end с заданным числом шагов num)
-inline std::vector<double> linspace(int start, int end, int num);
+template <d_types T>
+inline std::vector<T> linspace(int start, int end, int num);
 
 //генерация временных интервалов (от start до end с шагом step)
-template<typename T>
-inline std::vector<double> arange(T start, T end, T step);
+template <d_types T>
+inline std::vector<T> arange(T start, T end, T step);
 
-template<typename T>
+template <d_types T>
 inline std::vector<T> dot_product(vector<T> a, vector<T> b);
 
-template<typename T>
-inline std::vector<double> abs(T a);
+template <d_types T>
+inline std::vector<T> abs(T a);
 
-template<typename T>
-inline double sum(T a);
+template <d_types T>
+inline T sum(T a);
 
-template<typename T>
-inline std::vector<double> sort(T a);
+template <d_types T>
+inline std::vector<T> sort(T a);
 
-template<typename T>
-inline std::vector<double> exp(T a);
+templat e<d_types T>
+inline std::vector<T> exp(T a);
 
-inline std::vector<double> random(int num);
+template <d_types T>
+inline std::vector<T> random(int num);
 

@@ -1,7 +1,7 @@
 
 #include "HeadVMD.hpp"
 
-template<typename SignalDT> F<SignalDT>::F(vector<SignalDT> f)
+template<d_types SignalDT> F<SignalDT>::F(vector<SignalDT> f)
 {
     //if (f.size() % 2 != 0) {
     //    f.pop_back();
@@ -9,11 +9,11 @@ template<typename SignalDT> F<SignalDT>::F(vector<SignalDT> f)
     //double fs = 1.0 / f.size();
     //int ltemp = f.size() / 2;
     //std::vector<double> fMirr(ltemp);
-    //for (int i = 0; i < ltemp; i++) {
+    //for (int i = 0; i < ltemp; ++i) {
     //    fMirr[i] = f[ltemp - i - 1];
-    //}
+    //}???
     //fMirr.insert(fMirr.end(), f.begin(), f.end());
-    //for (int i = 0; i < ltemp; i++) {
+    //for (int i = 0; i < ltemp; ++i) {
     //    fMirr.push_back(f[f.size() - i - 1]);
     //}
     //int T = fMirr.size();
@@ -25,11 +25,11 @@ template<typename SignalDT> F<SignalDT>::F(vector<SignalDT> f)
     fs = 1.0 / f.size();
     int ltemp = f.size() / 2;
     std::vector fMirr(ltemp);
-    for (int i = 0; i < ltemp; i++) {
+    for (int i = 0; i < ltemp; ++i) {
         fMirr[i] = f[ltemp - i - 1];
     }
     fMirr.insert(fMirr.end(), f.begin(), f.end());
-    for (int i = 0; i < ltemp; i++) {
+    for (int i = 0; i < ltemp; ++i) {
         fMirr.push_back(f[f.size() - i - 1]);
     }
 
@@ -37,42 +37,37 @@ template<typename SignalDT> F<SignalDT>::F(vector<SignalDT> f)
 
     //std::vector<std::complex<double>> f_hat = fftshift(fft(fMirr));
     //std::vector<std::complex<double>> f_hat_plus = f_hat;
-    //for (int i = 0; i < T / 2; i++) {
+    //for (int i = 0; i < T / 2; ++i) {
     //    f_hat_plus[i] = 0;
     //}
-    std::vector<std::complex<double>> f_hat = fftshift<complex<double>>(fft(fMirr));
+    std::vector<std::complex<SignalDT>> f_hat = fftshift<complex<SignalDT>>(fft<SignalDT>(fMirr));
     f_hat_plus = f_hat;
-    for (int i = 0; i < T / 2; i++) {
+    for (int i = 0; i < T / 2; ++i) {
         f_hat_plus[i] = 0;
     }
 
 };
-template<typename SignalDT> vector<complex<double>> F<SignalDT>:: operator()() const
+template<d_types SignalDT> vector<complex<SignalDT>> F<SignalDT>:: operator()() const
 {
     return this->f_hat_plus;
 };
-template<typename SignalDT> complex<double>& F<SignalDT>:: operator[](int i)
+template<d_types SignalDT> complex<SignalDT>& F<SignalDT>:: operator[](int i) const
 {
     return f_hat_plus[i];
 };
-template<typename SignalDT> F<SignalDT>& F<SignalDT>:: operator=(vector<complex<double>> value)
-{
-    this->f_hat_plus = value;
-    return *this;
-};
-template<typename SignalDT> size_t F<SignalDT>::size() const
+template<d_types SignalDT> size_t F<SignalDT>::size() const
 {
     return f_hat_plus.size();
 };
-template<typename SignalDT> vector<complex<double>> F<SignalDT>::getF() const
+template<d_types SignalDT> vector<complex<SignalDT>> F<SignalDT>::getF() const
 {
     return this->f_hat_plus;
 }
-template<typename SignalDT> int F<SignalDT>::getT() const
+template<d_types SignalDT> int F<SignalDT>::getT() const
 {
     return T;
 };
-template<typename SignalDT> double F<SignalDT>::getFs() const
+template<d_types SignalDT> SignalDT F<SignalDT>::getFs() const
 {
     return fs;
 };
@@ -82,14 +77,14 @@ Fregs::Fregs(int T)
 {
     //std::vector<double> t = linspace(1, T, T);
     //std::vector<double> freqs(T);
-    //for (int i = 0; i < T; i++) {
+    //for (int i = 0; i < T; ++i) {
     //    freqs[i] = t[i] - 0.5 - (1.0 / T);
     //}
 
-    std::vector<double> t = linspace(1, T, T);
+    std::vector<double> t = linspace<double>(1, T, T);
 
     freqs.assign(T, 0.0);
-    for (int i = 0; i < T; i++) {
+    for (int i = 0; i < T; ++i) {
         freqs[i] = t[i] - 0.5 - (1.0 / T);
     }
 };
@@ -100,11 +95,6 @@ vector<double> Fregs::operator()() const
 double Fregs:: operator[](int i) const
 {
     return freqs[i];
-};
-Fregs& Fregs:: operator=(vector<double> value)
-{
-    this->freqs = value;
-    return *this;
 };
 size_t Fregs::size() const
 {
@@ -124,11 +114,6 @@ vector<double> alpha::operator()() const
 double alpha::operator[](int i) const
 {
     return Alpha[i];
-};
-alpha& alpha::operator=(vector<double> value)
-{
-    this->Alpha = value;
-    return *this;
 };
 size_t alpha::size() const
 {
@@ -171,19 +156,19 @@ void NumbIter::SetMinToN(int n)
 {
     this->omega_plus.assign(Niter, std::vector<double>(K));
     if (init == 1) {
-        for (int i = 0; i < K; i++) {
+        for (int i = 0; i < K; ++i) {
             this->omega_plus[0][i] = (0.5 / K) * i;
         }
     }
     else if (init == 2) {
         std::vector<double> random_nums = random(K);
         std::vector<double> exp_vals;
-        for (int i = 0; i < K; i++)
+        for (int i = 0; i < K; ++i)
         {
             exp_vals[i] = exp((log(fs) + (log(0.5) - log(fs))) * random_nums[i]);
         }
         std::vector<double> sorted_exp_vals = sort(exp_vals);
-        for (int i = 0; i < K; i++) {
+        for (int i = 0; i < K; ++i) {
             this->omega_plus[0][i] = sorted_exp_vals[i];
         }
     }
@@ -211,7 +196,7 @@ void NumbIter::SetMinToN(int n)
  void Omega::update_omega_plus(int T, int k, int n, Ud& u_hat_plus, Fregs& fregs)
 {
     double sum = 0.0;
-    for (int i = T / 2; i < T; i++) {
+    for (int i = T / 2; i < T; ++i) {
         sum += std::abs(u_hat_plus[n + 1][i][k] * u_hat_plus[n + 1][i][k]);
     }
     this->omega_plus[n + 1][k] = std::inner_product(fregs().begin() + T / 2, fregs().end(), u_hat_plus[n + 1].begin() + T / 2, 0.0) / sum;
@@ -223,8 +208,8 @@ void NumbIter::SetMinToN(int n)
  void Omega::count_omega(int Niter, int K)
 {
     this->omega.assign(Niter, std::vector<complex<double>>(K, 0.0));
-    for (int i = 0; i < Niter; i++) {
-        for (int k = 0; k < K; k++) {
+    for (int i = 0; i < Niter; ++i) {
+        for (int k = 0; k < K; ++k) {
             this->omega[i][k] = this->omega_plus[i][k];
         }
     }
@@ -246,58 +231,66 @@ void NumbIter::SetMinToN(int n)
 };
  void Lamb::update_lamb(int T, int n, double tau, Ud& u_hat_plus, vector<complex<double>>& f_hat_plus)
 {
-    for (int i = 0; i < T; i++) {
+    for (int i = 0; i < T; ++i) {
         lambda[n + 1][i] = lambda[n][i] + tau * (std::accumulate(u_hat_plus[n + 1][i].begin(), u_hat_plus[n + 1][i].end(), 0.0) - f_hat_plus[i]);
     }
 };
 
 
- Sum_UK::Sum_UK(int T)
+ template<d_types SignalDT> Sum_UK<SignalDT>::Sum_UK(int T)
 {
-    sum_uk.assign(T, complex<double>(0.0, 0.0));
+    sum_uk.assign(T, complex<SignalDT>(0.0, 0.0));
 };
- vector<complex<double>> Sum_UK::operator()() const
+ template<d_types SignalDT>
+ vector<complex<SignalDT>> Sum_UK<SignalDT>::operator()() const
 {
     return this->sum_uk;
 };
- complex<double>& Sum_UK::operator[](int i)
+ template<d_types SignalDT>
+ complex<SignalDT>& Sum_UK<SignalDT>::operator[](int i)
 {
     return sum_uk[i];
 };
- void Sum_UK::update_sum_first(int T, int K, int n, Ud& u_hat_plus)
+ template<d_types SignalDT>
+ void Sum_UK<SignalDT>::update_sum_first(int T, int K, int n, Ud<SignalDT>& u_hat_plus)
 {
-    for (int i = 0; i < T; i++) {
+    for (int i = 0; i < T; ++i) {
         sum_uk[i] = u_hat_plus[n][i][K - 1] + sum_uk[i] - u_hat_plus[n][i][0];
     }
 };
- void Sum_UK::update_sum_uk(int T, int k, int n, Ud& u_hat_plus)
+ template<d_types SignalDT>
+ void Sum_UK<SignalDT>::update_sum_uk(int T, int k, int n, Ud<SignalDT>& u_hat_plus)
 {
-    for (int i = 0; i < T; i++) {
+    for (int i = 0; i < T; ++i) {
         sum_uk[i] = u_hat_plus[n + 1][i][k - 1] + sum_uk[i] - u_hat_plus[n][i][k];
     }
 };
 
-
- Ud::Ud(int Niter, int K, vector<double> freqs)
+ template<d_types SignalDT>
+ Ud<SignalDT>::Ud(int Niter, int K, vector<SignalDT> freqs)
  {
      //std::vector<vector<std::vector<std::complex<double>>>> u_hat_plus(Niter, std::vector<std::vector<std::complex<double>>>(freqs.size(), std::vector<std::complex<double>>(K)));
-     u_hat_plus.assign(Niter, vector<vector<complex<double>>>(freqs.size(), vector<complex<double>>(K)));
+     u_hat_plus.assign(Niter, vector<vector<complex<SignalDT>>>(freqs.size(), vector<complex<SignalDT>>(K)));
  };
- vector<vector<vector<complex<double>>>> Ud::operator()() const
+ template<d_types SignalDT>
+ vector<vector<vector<complex<SignalDT>>>> Ud<SignalDT>::operator()() const
 {
     return this->u_hat_plus;
 };
- vector<vector<complex<double>>>& Ud::operator[](int i)
+ template<d_types SignalDT>
+ vector<vector<complex<SignalDT>>>& Ud<SignalDT>::operator[](int i)
 {
     return u_hat_plus[i];
 };
- bool Ud::isFinite()
+ template<d_types SignalDT>
+ bool Ud<SignalDT>::isFinite()
 {
     return check_finite;
 };
- void Ud::update_uhat(int T, int k, int n, vector<complex<double>>& f_hat_plus, Sum_UK& sum_uk, Lamb& lambda_hat, alpha& Alpha, Fregs& freqs, Omega& omega_plus)
+ template<d_types SignalDT>
+ void Ud<SignalDT>::update_uhat(int T, int k, int n, vector<complex<SignalDT>>& f_hat_plus, Sum_UK<SignalDT>& sum_uk, Lamb& lambda_hat, alpha& Alpha, Fregs& freqs, Omega& omega_plus)
 {
-    for (int i = 0; i < T; i++) {
+    for (int i = 0; i < T; ++i) {
         u_hat_plus[n + 1][i][k] = (f_hat_plus[i] - sum_uk[i] - (lambda_hat[n][i] / 2.0)) / (1.0 + Alpha[k] * (freqs[i] - omega_plus[n][k]) * (freqs[i] - omega_plus[n][k]));
         if (!isfinite(u_hat_plus[n + 1][i][k]))
         {
@@ -306,67 +299,73 @@ void NumbIter::SetMinToN(int n)
         }
     }
 };
- void Ud::u(int N, int T, int K)
+ template<d_types SignalDT>
+ void Ud<SignalDT>::u(int N, int T, int K)
 {
     std::vector<int> idxs(T / 2);
     std::iota(idxs.begin(), idxs.end(), 1);
     std::reverse(idxs.begin(), idxs.end());
 
-    std::vector<std::vector<std::complex<double>>> u_hat(T, std::vector<std::complex<double>>(K, std::complex<double>(0.0, 0.0)));
-    for (int i = T / 2; i < T; i++) {
+    std::vector<std::vector<std::complex<SignalDT>>> u_hat(T, std::vector<std::complex<SignalDT>>(K, std::complex<SignalDT>(0.0, 0.0)));
+    for (int i = T / 2; i < T; ++i) {
         u_hat[i] = u_hat_plus[N - 1][i];
     }
-    for (int i = 0; i < T / 2; i++) {
-        for (int j = 0; j < K; j++) {
+    for (int i = 0; i < T / 2; ++i) {
+        for (int j = 0; j < K; ++j) {
             u_hat[idxs[i]][j] = std::conj(u_hat_plus[N - 1][i][j]);
         }
     }
-    for (int j = 0; j < K; j++) {
+    for (int j = 0; j < K; ++j) {
         u_hat[0][j] = std::conj(u_hat[T - 1][j]);
     }
 
-    std::vector<std::vector<complex<double>>> u_buf(K, std::vector<complex<double>>(T, 0.0));
-    for (int i = 0; i < T; i++) {
-        for (int k = 0; k < K; k++) {
+    std::vector<std::vector<complex<SignalDT>>> u_buf(K, std::vector<complex<SignalDT>>(T, 0.0));
+    for (int i = 0; i < T; ++i) {
+        for (int k = 0; k < K; ++k) {
             u_buf[i][k] = 0;
         }
     }
-    for (int k = 0; k < K; k++) {
-        u_buf[k] = ifft<complex<double>>(vector<complex<double>>(fftshift<complex<double>>(u_hat[k])));
+    for (int k = 0; k < K; ++k) {
+        u_buf[k] = ifft<complex<SignalDT>>(vector<complex<SignalDT>>(fftshift<complex<SignalDT>>(u_hat[k])));
     }
 
-    u_final.assign(K, vector<complex<double>>(T / 2));
-    for (int k = 0; k < K; k++) {
-        for (int i = T / 4; i < 3 * T / 4; i++) {
+    u_final.assign(K, vector<complex<SignalDT>>(T / 2));
+    for (int k = 0; k < K; ++k) {
+        for (int i = T / 4; i < 3 * T / 4; ++i) {
             u_final[k][i - T / 4] = u_buf[k][i];
         }
     }
 
-    u_hat_final.assign(K, vector<complex<double>>(T / 2));
-    for (int k = 0; k < K; k++) {
-        u_hat_final[k] = fftshift<complex<double>>(fft<complex<double>>(u_buf[k]));
+    u_hat_final.assign(K, vector<complex<SignalDT>>(T / 2));
+    for (int k = 0; k < K; ++k) {
+        u_hat_final[k] = fftshift<complex<SignalDT>>(fft<complex<SignalDT>>(u_buf[k]));
     }
 };
- vector<vector<complex<double>>> Ud::getU() const
+ template<d_types SignalDT>
+ vector<vector<complex<SignalDT>>> Ud<SignalDT>::getU() const
 {
     return u_final;
 };
- vector<vector<complex<double>>> Ud::getU_hat() const
+ template<d_types SignalDT>
+ vector<vector<complex<SignalDT>>> Ud<SignalDT>::getU_hat() const
 {
     return u_hat_final;
 };
 
-
-VMDDecomposition::VMDDecomposition(vector<vector<complex<double>>> u_hat, vector<vector<complex<double>>> u, vector<vector<double>> omega) : u_hat(u_hat), u(u), omega(omega) {};
-vector<vector<complex<double>>> VMDDecomposition::GetUhat() const
+ template<d_types SignalDT>
+VMDDecomposition<SignalDT>::VMDDecomposition(vector<vector<complex<SignalDT>>> u_hat, vector<vector<complex<SignalDT>>> u, vector<vector<SignalDT>> omega) : u_hat(u_hat), u(u), omega(omega) {};
+template<d_types SignalDT>
+vector<vector<complex<SignalDT>>> VMDDecomposition<SignalDT>::GetUhat() const
 {
     return u_hat;
 };
-vector<vector<complex<double>>> VMDDecomposition::GetU() const
+template<typename SignalDT>
+vector<vector<complex<SignalDT>>> VMDDecomposition<SignalDT>::GetU() const
 {
     return u;
 };
-vector<vector<double>> VMDDecomposition::GetOmega() const
+template<typename SignalDT>
+vector<vector<SignalDT>> VMDDecomposition<SignalDT>::GetOmega() const
 {
     return omega;
 };
